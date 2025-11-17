@@ -60,7 +60,21 @@ public class LoanService {
     public LoanDto updateLoan(Long loanId, UpdateLoan dto) {
         Loan loan = loanRepository.findByIdOptional(loanId)
                 .orElseThrow(() -> new LoanNotFoundException(loanId));
-        loan.getBook().setAvailable(true);
+        if (loan.getReturnDate() != null) {
+            if (dto.getLoanDate() != null) {
+                loan.setLoanDate(dto.getLoanDate());
+            }
+            if (dto.getReturnDate() != null) {
+                loan.setReturnDate(dto.getReturnDate());
+            }
+            loanRepository.persist(loan);
+            return loanMapper.toDto(loan);
+        }
+        Book oldBook = loan.getBook();
+        if (dto.getBookId() != null && !oldBook.getId().equals(dto.getBookId())) {
+            oldBook.setAvailable(true);
+            bookRepository.persist(oldBook);
+        }
         loanProcess(loan, dto);
         if (dto.getLoanDate() != null) {
             loan.setLoanDate(dto.getLoanDate());
@@ -72,20 +86,25 @@ public class LoanService {
                 throw new ReturnDateException("Return Date is null or earlier than loan date");
             }
         }
+
         loanRepository.persist(loan);
         return loanMapper.toDto(loan);
     }
 
     private void loanProcess(Loan loan, RequestLoan dto) {
         if (dto.getBookId() != null) {
-            Book book = bookRepository.findByIdOptional(dto.getBookId())
-                    .orElseThrow(() -> new BookNotFoundException(dto.getBookId()));
-            if (!book.getAvailable()) {
-                throw new BookUnavailableException("Book is already loaned out");
+            if (loan.getBook() != null && loan.getBook().getId().equals(dto.getBookId())) {
+                // книга не изменилась
+            } else {
+                Book book = bookRepository.findByIdOptional(dto.getBookId())
+                        .orElseThrow(() -> new BookNotFoundException(dto.getBookId()));
+                if (!book.getAvailable()) {
+                    throw new BookUnavailableException("Book is already loaned out");
+                }
+                book.setAvailable(false);
+                bookRepository.persist(book);
+                loan.setBook(book);
             }
-            book.setAvailable(false);
-            bookRepository.persist(book);
-            loan.setBook(book);
         }
         if (dto.getReaderId() != null) {
             Reader reader = readerRepository.findByIdOptional(dto.getReaderId())
