@@ -1,0 +1,37 @@
+quarkus:
+  application:
+    name: Library
+
+  http:
+    port: 8080
+    cors:
+      enabled: true
+      origins: http://localhost:3000
+      methods: GET, POST, PUT, PATCH, DELETE, OPTIONS
+      headers: accept, authorization, content-type, x-requested-with
+
+  liquibase:
+    migrate-at-start: true
+    change-log: classpath:/db/changelog/db.changelog-master.yml
+
+"%dev":
+  quarkus:
+    datasource:
+      db-kind: postgresql
+      jdbc:
+        url: jdbc:postgresql://localhost:5435/library
+      username: user
+      password: pass
+    devservices:
+      enabled: false
+
+"%docker":
+  quarkus:
+    datasource:
+      db-kind: postgresql
+      jdbc:
+        url: jdbc:postgresql://db:5432/library
+      username: user
+      password: pass
+    devservices:
+      enabled: false
