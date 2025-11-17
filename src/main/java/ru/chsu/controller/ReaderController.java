@@ -51,8 +51,8 @@ public class ReaderController {
     }
 
     @PATCH
-    @Path("/{id}")
-    public ReaderDto changeName(@PathParam("id") Long id, @QueryParam("name") String name) {
+    @Path("/{id}/name/{readerName}")
+    public ReaderDto changeName(@PathParam("id") Long id, @PathParam("readerName") String name) {
         return readerService.changeName(id, name);
     }
 

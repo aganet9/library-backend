@@ -65,8 +65,8 @@ public class BookController {
     }
 
     @PATCH
-    @Path("/{id}")
-    public BookDto changeTitle(@PathParam("id") Long id, @QueryParam("title") String title) {
+    @Path("/{id}/title/{titleName}")
+    public BookDto changeTitle(@PathParam("id") Long id, @PathParam("titleName") String title) {
         return bookService.changeTitle(id, title);
     }
 }
